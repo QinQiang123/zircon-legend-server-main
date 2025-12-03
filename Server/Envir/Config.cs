@@ -39,6 +39,7 @@ namespace Server.Envir
             AllowRequestActivation = true;
             AllowNewCharacter = true;
             AllowDeleteCharacter = true;
+            AllowStartGame = true;
             RelogDelay = TimeSpan.FromSeconds(10);
             AllowWarrior = true;
             AllowWizard = true;

@@ -784,6 +784,9 @@ namespace Server.Envir
                 Config.武器品质每低一档降低精炼上限 = 3;
             }
 
+            // 从配置文件初始化"仅限管理员登录"设置
+            OnlyAdminLogin = Config.AdminOnlyLogin;
+
             // 启动管理后台 Web 服务（必须在 EnvirLoop 之前，因为 EnvirLoop 是阻塞的无限循环）
             AdminWebHost.Start();
 
