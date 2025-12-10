@@ -255,26 +255,61 @@ namespace Server.Web.Pages
         // 生成NPC并移动到指定位置
         private void SpawnAndMoveNpc(NPCInfo npcInfo, int mapIndex, int locationX, int locationY)
         {
-            if (npcInfo == null) return;
+            if (npcInfo == null || mapIndex <= 0) return;
 
             try
             {
                 // 查找目标地图
                 var targetMap = SEnvir.Maps.Values.FirstOrDefault(m => m?.Info?.Index == mapIndex);
-                if (targetMap == null) return;
+                if (targetMap == null)
+                {
+                    SEnvir.Log($"[Admin] 地图 {mapIndex} 不存在，NPC将在服务器重启后生成");
+                    return;
+                }
 
-                // 生成NPC
-                npcInfo.Spawn();
+                // 尝试在目标地图创建NPC实例
+                var targetPoint = new System.Drawing.Point(locationX, locationY);
 
-                // 查找刚生成的NPC实例
+                // 检查该NPC是否已有实例
+                Models.NPCObject? existingNpc = null;
+                Models.Map? currentMap = null;
                 foreach (var map in SEnvir.Maps.Values)
                 {
-                    var npcObj = map?.NPCs?.FirstOrDefault(n => n?.NPCInfo?.Index == npcInfo.Index);
-                    if (npcObj != null)
+                    existingNpc = map?.NPCs?.FirstOrDefault(n => n?.NPCInfo?.Index == npcInfo.Index);
+                    if (existingNpc != null)
                     {
-                        // 移动到指定位置
-                        MoveNpcToLocation(npcObj, targetMap, locationX, locationY);
+                        currentMap = map;
                         break;
+                    }
+                }
+
+                if (existingNpc != null)
+                {
+                    // 已有实例，移动到新位置
+                    MoveNpcToLocation(existingNpc, currentMap, targetMap, targetPoint);
+                    SEnvir.Log($"[Admin] NPC [{npcInfo.Index}] 已移动到 {targetMap.Info?.Description} ({locationX}, {locationY})");
+                }
+                else
+                {
+                    // 没有实例，创建新的NPC实例（使用对象初始化器）
+                    var npcObject = new Models.NPCObject
+                    {
+                        NPCInfo = npcInfo,
+                        CurrentMap = targetMap,
+                        CurrentLocation = targetPoint
+                    };
+
+                    var cell = targetMap.GetCell(targetPoint);
+                    if (cell != null)
+                    {
+                        npcObject.CurrentCell = cell;
+                        cell.AddObject(npcObject);
+                        targetMap.NPCs?.Add(npcObject);
+                        SEnvir.Log($"[Admin] NPC [{npcInfo.Index}] 已在 {targetMap.Info?.Description} ({locationX}, {locationY}) 生成");
+                    }
+                    else
+                    {
+                        SEnvir.Log($"[Admin] 位置 ({locationX}, {locationY}) 无效，NPC将在服务器重启后在区域内随机生成");
                     }
                 }
             }
