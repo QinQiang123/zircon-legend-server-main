@@ -11,6 +11,7 @@ using Models = Zircon.Server.Models;
 namespace Server.Web.Pages
 {
     [Authorize]
+    [IgnoreAntiforgeryToken]
     public class NpcsModel : PageModel
     {
         public List<NpcViewModel> Npcs { get; set; } = new();

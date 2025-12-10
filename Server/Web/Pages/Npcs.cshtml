@@ -184,7 +184,7 @@
                 <h5 class="modal-title"><i class="bi bi-plus-lg"></i> 新建NPC</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="createNpcForm">
+            <form id="createNpcForm" method="post" asp-page-handler="CreateNpc">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">NPC名称 <span class="text-danger">*</span></label>
@@ -218,7 +218,7 @@
                 <h5 class="modal-title"><i class="bi bi-pencil"></i> 编辑NPC</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="npcEditForm">
+            <form id="npcEditForm" method="post" asp-page-handler="UpdateNpc">
                 <div class="modal-body">
                     <input type="hidden" name="npcIndex" id="editNpcIndex">
                     <div class="row">
@@ -1181,32 +1181,30 @@ document.addEventListener('DOMContentLoaded', function() {
     setupMapSearch('addActionMapSearch', 'addActionMapIndex', 'addActionMapName');
 
     // 创建NPC表单
-    document.getElementById('createNpcForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const res = await fetch('/Npcs?handler=CreateNpc', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: new URLSearchParams(formData)
+    const createNpcForm = document.getElementById('createNpcForm');
+    if (createNpcForm) {
+        AjaxForm.bindOne(createNpcForm, {
+            successMessage: 'NPC创建成功',
+            closeModal: true,
+            modalId: 'createNpcModal',
+            onSuccess: function(result) {
+                location.reload();
+            }
         });
-        const result = await res.json();
-        if (result.success) { ToastManager.success(result.message); location.reload(); }
-        else ToastManager.error(result.message);
-    };
+    }
 
     // 编辑NPC表单
-    document.getElementById('npcEditForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const res = await fetch('/Npcs?handler=UpdateNpc', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: new URLSearchParams(formData)
+    const npcEditForm = document.getElementById('npcEditForm');
+    if (npcEditForm) {
+        AjaxForm.bindOne(npcEditForm, {
+            successMessage: 'NPC更新成功',
+            closeModal: true,
+            modalId: 'npcEditModal',
+            onSuccess: function(result) {
+                location.reload();
+            }
         });
-        const result = await res.json();
-        if (result.success) { ToastManager.success(result.message); location.reload(); }
-        else ToastManager.error(result.message);
-    };
+    }
 
     // 创建入口页面表单
     document.getElementById('createEntryPageForm').onsubmit = async function(e) {
