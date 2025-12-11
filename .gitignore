@@ -438,3 +438,4 @@ IDE/MonoDevelop/MonoDevelop.MonoGame/templates/Common/MonoGame.Framework.dll.con
 /Server/msquic.dll
 /Server/netstandard.dll
 /Server/web.config
+/nul
