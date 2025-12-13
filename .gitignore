@@ -50,7 +50,6 @@ artifacts/
 
 # vscode files
 *.code-workspace
-/.github*/
 /.vscode*/
 
 # JetBrains Rider
