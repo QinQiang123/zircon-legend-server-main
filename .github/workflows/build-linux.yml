@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     
     steps:
     - name: Checkout code
@@ -39,13 +39,14 @@ jobs:
         echo "正在发布 Linux x64 版本..."
         dotnet publish "Server/Server.csproj" -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/linux-x64
         echo "发布完成，文件列表："
-        ls -lah ./publish/linux-x64/
+        Get-ChildItem -Path ./publish/linux-x64/ -Force
+      shell: pwsh
 
     - name: Archive Linux x64 build
       run: |
         cd publish/linux-x64
         tar -czf ../Server-linux-x64.tar.gz *
-        cd ../..
+      shell: bash
 
     - name: Upload Linux x64 artifact
       uses: actions/upload-artifact@v4
