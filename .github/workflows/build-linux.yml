@@ -61,7 +61,31 @@ jobs:
       with:
         files: |
           publish/Server-linux-x64.tar.gz
+        body: |
+          ## 🎉 Linux x64 发布版本
+          
+          ### 📦 包含内容
+          - Server 可执行文件（自包含 .NET 8.0 运行时）
+          - Library 依赖库
+          - Web 管理面板静态资源
+          
+          ### 🚀 使用方法
+          ```bash
+          # 解压文件
+          tar -xzf Server-linux-x64.tar.gz
+          
+          # 添加执行权限
+          chmod +x Server
+          
+          # 运行服务器
+          ./Server
+          ```
+          
+          ### 📋 系统要求
+          - Linux x64 系统
+          - 无需安装 .NET 运行时（已包含）
         draft: false
         prerelease: false
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
