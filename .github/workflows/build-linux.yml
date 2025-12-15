@@ -55,21 +55,64 @@ jobs:
         path: publish/Server-linux-x64.tar.gz
         retention-days: 30
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image for ARM64
+      run: |
+        echo "正在构建 ARM64 Docker 镜像..."
+        docker buildx build \
+          --platform linux/arm64 \
+          --file Dockerfile.new \
+          --tag zircon-server:arm64 \
+          --output type=docker,dest=./publish/zircon-server-arm64.tar \
+          .
+        echo "Docker 镜像构建完成"
+      shell: bash
+
+    - name: Compress Docker image
+      run: |
+        cd publish
+        gzip zircon-server-arm64.tar
+        echo "压缩完成，文件列表："
+        ls -lh zircon-server-arm64.tar.gz
+      shell: bash
+
+    - name: Upload ARM64 Docker image artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: zircon-server-arm64-docker
+        path: publish/zircon-server-arm64.tar.gz
+        retention-days: 30
+
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
           publish/Server-linux-x64.tar.gz
+          publish/zircon-server-arm64.tar.gz
         body: |
-          ## 🎉 Linux x64 发布版本
+          ## 🎉 Linux x64 + ARM64 发布版本
           
           ### 📦 包含内容
+          
+          #### Linux x64 可执行文件
           - Server 可执行文件（自包含 .NET 8.0 运行时）
           - Library 依赖库
           - Web 管理面板静态资源
           
+          #### ARM64 Docker 镜像
+          - zircon-server-arm64.tar.gz - 适用于 ARM64 架构的 Docker 镜像文件
+          
           ### 🚀 使用方法
+          
+          #### Linux x64 直接运行
           ```bash
           # 解压文件
           tar -xzf Server-linux-x64.tar.gz
@@ -81,9 +124,32 @@ jobs:
           ./Server
           ```
           
+          #### ARM64 Docker 部署
+          ```bash
+          # 解压镜像文件
+          gunzip zircon-server-arm64.tar.gz
+          
+          # 加载 Docker 镜像
+          docker load -i zircon-server-arm64.tar
+          
+          # 运行容器
+          docker run -d \
+            -p 7000:7000 \
+            -p 7080:7080 \
+            -v ./datas:/zircon/datas \
+            --name zircon-server \
+            zircon-server:arm64
+          ```
+          
           ### 📋 系统要求
+          
+          #### Linux x64
           - Linux x64 系统
           - 无需安装 .NET 运行时（已包含）
+          
+          #### ARM64 Docker
+          - ARM64 架构系统（如树莓派 4、Apple M1/M2、AWS Graviton 等）
+          - Docker 环境
         draft: false
         prerelease: false
         generate_release_notes: true
