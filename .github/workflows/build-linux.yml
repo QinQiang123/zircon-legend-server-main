@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-linux-x64:
     runs-on: windows-latest
     
     steps:
@@ -55,6 +55,15 @@ jobs:
         path: publish/Server-linux-x64.tar.gz
         retention-days: 30
 
+  build-docker-arm64:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
@@ -70,33 +79,47 @@ jobs:
           --platform linux/arm64 \
           --file Dockerfile.new \
           --tag zircon-server:arm64 \
-          --output type=docker,dest=./publish/zircon-server-arm64.tar \
+          --output type=docker,dest=./zircon-server-arm64.tar \
           .
         echo "Docker 镜像构建完成"
-      shell: bash
 
     - name: Compress Docker image
       run: |
-        cd publish
         gzip zircon-server-arm64.tar
         echo "压缩完成，文件列表："
         ls -lh zircon-server-arm64.tar.gz
-      shell: bash
 
     - name: Upload ARM64 Docker image artifact
       uses: actions/upload-artifact@v4
       with:
         name: zircon-server-arm64-docker
-        path: publish/zircon-server-arm64.tar.gz
+        path: zircon-server-arm64.tar.gz
         retention-days: 30
 
+  release:
+    needs: [build-linux-x64, build-docker-arm64]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download Linux x64 artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: Server-linux-x64
+        path: ./release
+
+    - name: Download ARM64 Docker artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: zircon-server-arm64-docker
+        path: ./release
+
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          publish/Server-linux-x64.tar.gz
-          publish/zircon-server-arm64.tar.gz
+          release/Server-linux-x64.tar.gz
+          release/zircon-server-arm64.tar.gz
         body: |
           ## 🎉 Linux x64 + ARM64 发布版本
           
