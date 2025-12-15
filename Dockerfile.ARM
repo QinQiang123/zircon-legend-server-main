@@ -27,7 +27,8 @@ RUN dotnet publish "Server.csproj" \
     --self-contained true \
     --no-restore \
     -p:PublishSingleFile=false \
-    -p:PublishTrimmed=false
+    -p:PublishTrimmed=false \
+    -p:PlatformTarget=AnyCPU
 
 # Stage 2: 运行时阶段
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
