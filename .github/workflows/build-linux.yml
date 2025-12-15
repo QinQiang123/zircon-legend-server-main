@@ -77,7 +77,7 @@ jobs:
         echo "正在构建 ARM64 Docker 镜像..."
         docker buildx build \
           --platform linux/arm64 \
-          --file Dockerfile.new \
+          --file Dockerfile.ARM \
           --tag zircon-server:arm64 \
           --output type=docker,dest=./zircon-server-arm64.tar \
           .
